@@ -91,22 +91,61 @@ int createLeafNodes(int freq[]) {
 int buildEncodingTree(int nextFree) {
     // TODO:
     // 1. Create a MinHeap object.
+    MinHeap heap;
+
     // 2. Push all leaf node indices into the heap.
-    // 3. While the heap size is greater than 1:
-    //    - Pop two smallest nodes
-    //    - Create a new parent node with combined weight
-    //    - Set left/right pointers
-    //    - Push new parent index back into the heap
+    for (int i = 0; i < nextFree; i++)
+    {
+        heap.push(i, weightArr);
+    }
+
+    while (heap.size > 1) //While heap size greater than 1
+    {
+        int a = heap.pop(weightArr); //Pops two smallest nodes
+        int b = heap.pop(weightArr);
+        int parent = nextFree++;
+
+        weightArr[parent] = weightArr[a] + weightArr[b]; //Create parent node
+        leftArr[parent] = a; //Left pointer
+        rightArr[parent] = b; //Right pointer
+        charArr[parent] = '*';
+
+        heap.push(parent, weightArr); //Push parent index back into heap
+    }
     // 4. Return the index of the last remaining node (root)
-    return -1; // placeholder
+    int root = heap.pop(weightArr);
+    return root;
 }
 
 // Step 4: Use an STL stack to generate codes
-void generateCodes(int root, string codes[]) {
+void generateCodes(int root, string codes[])
+{
     // TODO:
     // Use stack<pair<int, string>> to simulate DFS traversal.
     // Left edge adds '0', right edge adds '1'.
     // Record code when a leaf node is reached.
+    if (root < 0) return;
+
+    stack<pair<int, string>> st;
+    st.push({root, ""});
+
+    while (!st.empty()) //While loop for the stack not being empty
+    {
+        auto [node, code] = st.top();
+        st.pop();
+        int right = rightArr[node];
+        int left = leftArr[node];
+
+        if (left == -1 && right == -1)
+        {
+            char ch = charArr[node];
+            codes[ch - 'a'] = code;
+        } else
+        {
+            if (right != -1) st.push({right, code + "1"}); //Right adds 1
+            if (left != -1) st.push({left, code +"0"}); //Left adds 0
+        }
+    }
 }
 
 // Step 5: Print table and encoded message
